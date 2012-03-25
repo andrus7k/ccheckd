@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
 class Plugin():
-    stamp = ''
-    host = ''
     name = ''
-    instance = ''
-    type = ''
-    typeinstance = ''
+    host = ''
+    instances = dict()
+
+class PluginInstance():
+    name = ''
+    types = dict()
+
+class Type():
+    name = ''
+    instances = dict()
+
+class TypeInstance():
+    name = ''
+    stamp = ''
+    values = dict()
