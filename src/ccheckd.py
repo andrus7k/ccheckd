@@ -45,7 +45,7 @@ class Poller(Thread):
                 else:
                     type = Type()
                     type.name = typeName
-                    plugin[typeName] = type
+                    pluginInstance.types[typeName] = type
 
                 if type.instances.has_key(typeInstanceName):
                     typeInstance = type.instances.get(typeInstanceName)
@@ -68,7 +68,7 @@ class Worker(Thread):
     def run(self):
         while True:
             plugin = self.q.get()
-            print "%s\t%s\t%s\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, plugin.instances)
+            print "\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, plugin.instances)
             self.q.task_done()
 
 
