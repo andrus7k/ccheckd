@@ -2,17 +2,17 @@
 class Plugin():
     name = ''
     host = ''
-    instances = dict()
+    instances = {}
 
 class PluginInstance():
     name = ''
-    types = dict()
+    types = {}
 
 class Type():
     name = ''
-    instances = dict()
+    instances = {}
 
 class TypeInstance():
     name = ''
     stamp = ''
-    values = dict()
+    values = {}
