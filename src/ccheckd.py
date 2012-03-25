@@ -14,7 +14,7 @@ class Poller(Thread):
     def run(self):
         plugin = Plugin()
         while True:
-            c = Collectd('/var/run/collectd.sock', noisy=False)
+            c = Collectd('/var/run/collectd.sock', noisy=True)
 
             for val in c.listval():
                 stamp, identifier = val.split(' ',1)
@@ -55,7 +55,6 @@ class Poller(Thread):
                     type.instances[typeInstanceName] = pluginInstance
 
                 typeInstance.stamp = stamp
-
             time.sleep(5)
 
 class Worker(Thread):
@@ -68,7 +67,7 @@ class Worker(Thread):
     def run(self):
         while True:
             plugin = self.q.get()
-            print "\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, plugin.instances)
+            print "\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, ', '.join(plugin.instances.keys()))
             self.q.task_done()
 
 
