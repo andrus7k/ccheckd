@@ -7,11 +7,9 @@ from collectd import Host
 
 if __name__ == '__main__':
     c = Collectd('/var/run/collectd.sock', noisy=True)
-    list = c.listval()
-
     hosts = dict()
 
-    for val in list:
+    for val in c.listval():
         stamp, identifier = val.split(' ',1)
         host, plugin, type = identifier.split('/',4)
 
