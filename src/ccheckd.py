@@ -2,12 +2,8 @@
 from Queue import Queue
 from threading import Thread
 import time
-
-
-__author__="andrus"
-__date__ ="$Mar 24, 2012 2:52:57 PM$"
-
 from collectd import Collectd
+from model import Plugin
 
 class Poller(Thread):
 
@@ -18,15 +14,18 @@ class Poller(Thread):
     def run(self):
         while True:
             c = Collectd('/var/run/collectd.sock', noisy=False)
+
             for val in c.listval():
                 stamp, identifier = val.split(' ',1)
                 host, plugin, type = identifier.split('/',4)
                 typeinstance = ''
                 plugininstance = ''
+
                 if "-" in plugin:
                     plugin, plugininstance = plugin.split('-',1)
                 if "-" in type:
                     type, typeinstance = type.split('-',1)
+
                 p = Plugin()
                 p.name = plugin
                 p.stamp = stamp
@@ -55,23 +54,9 @@ class CCheckD():
 
     def start(self):
         q = Queue()
-        poller = Poller(q)
         worker = Worker('a',q)
         worker.start()
         worker = Worker('b',q)
         worker.start()
-        worker = Worker('c',q)
-        worker.start()
-        worker = Worker('d',q)
-        worker.start()
-        worker = Worker('e',q)
-        worker.start()
+        poller = Poller(q)
         poller.start()
-
-class Plugin():
-    stamp = ''
-    host = ''
-    name = ''
-    instance = ''
-    type = ''
-    typeinstance = ''

@@ -1,6 +1,4 @@
 #!/usr/bin/python
-import sys
-import time
 from src.ccheckd import CCheckD
 
 if __name__ == '__main__':
