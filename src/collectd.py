@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: ISO-8859-1 -*-
 # collect.py: the python collectd-unixsock module.
 #
 # Requires collectd to be configured with the unixsock plugin, like so:
@@ -26,12 +26,13 @@
 # 2. Altered source versions must be plainly marked as such, and must not be
 #    misrepresented as being the original software.
 # 3. This notice may not be removed or altered from any source distribution.
-### added Plugin,PluginInstance, classes by Andrus Viik
 
 import socket
 import sys
 
+
 class Collectd():
+
     def __init__(self, path='/var/run/collectd-unixsock', noisy=False):
         self.noisy = noisy
         self.path = path
@@ -222,7 +223,21 @@ class Collectd():
             sys.stderr.write("[error] Closing socket failed: [%d] %s"
                              % (errno, errstr))
 
-class Host:
 
-    def __init__(self, hostname):
-        self.hostname = hostname
+if __name__ == '__main__':
+    """Collect values from socket and dump to STDOUT"""
+
+    c = Collectd('/var/run/collectd-unixsock', noisy=True)
+    list = c.listval()
+    for val in list:
+        stamp, identifier = val.split()
+        print "\n%s" % identifier
+        print "\tUpdate time: %s" % stamp
+
+        values = c.getval(identifier)
+        print "\tValue list: %s" % ', '.join(values)
+
+        # don't fetch thresholds by default because collectd will crash
+        # if there is no treshold for the given identifier
+        #thresholds = c.getthreshold(identifier)
+        #print "\tThresholds: %s" % ', '.join(thresholds)
