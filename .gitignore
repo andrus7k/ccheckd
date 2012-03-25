@@ -6,7 +6,7 @@
 *.exe
 *.o
 *.so
-#*.pyc
+*.pyc
 
 # Packages #
 ############
@@ -33,3 +33,6 @@
 ehthumbs.db
 Icon?
 Thumbs.db
+
+#IDE
+.idea
