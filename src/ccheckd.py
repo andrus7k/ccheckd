@@ -13,9 +13,8 @@ class Poller(Thread):
 
     def run(self):
         plugin = Plugin()
+        c = Collectd('/var/run/collectd.sock', noisy=True)
         while True:
-            c = Collectd('/var/run/collectd.sock', noisy=True)
-
             for val in c.listval():
                 stamp, identifier = val.split(' ',1)
                 hostName, pluginName, typeName = identifier.split('/',4)
@@ -76,8 +75,6 @@ class CCheckD():
     def start(self):
         q = Queue()
         worker = Worker('a',q)
-        worker.start()
-        worker = Worker('b',q)
         worker.start()
         poller = Poller(q)
         poller.start()

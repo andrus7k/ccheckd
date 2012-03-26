@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 class Plugin():
-    name = ''
-    host = ''
-    instances = {}
+    def __init__(self):
+        self.name = ''
+        self.host = ''
+        self.instances = {}
 
 class PluginInstance():
-    name = ''
-    types = {}
+    def __init__(self):
+        self.name = ''
+        self.types = {}
 
 class Type():
-    name = ''
-    instances = {}
+    def __init__(self):
+        self.name = ''
+        self.instances = {}
 
 class TypeInstance():
-    name = ''
-    stamp = ''
-    values = {}
+    def __init__(self):
+        self.name = ''
+        self.stamp = ''
+        self.values = {}
