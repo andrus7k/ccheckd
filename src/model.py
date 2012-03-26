@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 class Plugin():
-    def __init__(self):
-        self.name = ''
-        self.host = ''
+    def __init__(self, name, host):
+        self.name = name
+        self.host = host
         self.instances = {}
 
 class PluginInstance():
@@ -19,4 +19,5 @@ class TypeInstance():
     def __init__(self):
         self.name = ''
         self.stamp = ''
+        self.identifier = {}
         self.values = {}

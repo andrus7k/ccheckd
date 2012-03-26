@@ -14,50 +14,58 @@ class Poller(Thread):
         self.q = q
         self.sock_path = sock_path
 
+    def parseIdentifier(self, val):
+        stamp, identifier = val.split(' ', 1)
+        hostName, pluginName, typeName = identifier.split('/', 4)
+        typeInstanceName = ''
+        pluginInstanceName = ''
+        if "-" in pluginName:
+            pluginName, pluginInstanceName = pluginName.split('-', 1)
+        if "-" in typeName:
+            typeName, typeInstanceName = typeName.split('-', 1)
+        return stamp, hostName, pluginName, pluginInstanceName, typeName, typeInstanceName, identifier
+
+    def processIdentifiers(self, identifiers):
+        for identifier in identifiers:
+            stamp, hostName, pluginName, pluginInstanceName, typeName, typeInstanceName, identifier = self.parseIdentifier(identifier)
+
+            if 'plugin' not in locals():
+                plugin = Plugin(pluginName, hostName)
+            elif plugin.name != pluginName:
+                self.q.put(plugin)
+                plugin = Plugin(pluginName, hostName)
+
+            if plugin.instances.has_key(pluginInstanceName):
+                pluginInstance = plugin.instances.get(pluginInstanceName)
+            else:
+                pluginInstance = PluginInstance()
+                pluginInstance.name = pluginInstanceName
+                plugin.instances[pluginInstanceName] = pluginInstance
+
+            if pluginInstance.types.has_key(typeName):
+                type = pluginInstance.types.get(typeName)
+            else:
+                type = Type()
+                type.name = typeName
+                pluginInstance.types[typeName] = type
+
+            if type.instances.has_key(typeInstanceName):
+                typeInstance = type.instances.get(typeInstanceName)
+            else:
+                typeInstance = TypeInstance()
+                typeInstance.name = typeInstanceName
+                typeInstance.identifier = identifier
+                type.instances[typeInstanceName] = typeInstance
+
+            typeInstance.stamp = stamp
+
     def run(self):
-        plugin = Plugin()
         c = Collectd(self.sock_path, noisy=True)
         while True:
-            for val in c.listval():
-                stamp, identifier = val.split(' ',1)
-                hostName, pluginName, typeName = identifier.split('/',4)
-                typeInstanceName = ''
-                pluginInstanceName = ''
-
-                if "-" in pluginName:
-                    pluginName, pluginInstanceName = pluginName.split('-',1)
-                if "-" in typeName:
-                    typeName, typeInstanceName = typeName.split('-',1)
-
-                if plugin.name != pluginName:
-                    self.q.put(plugin)
-                    plugin=Plugin()
-                    plugin.name = pluginName
-                    plugin.host = hostName
-
-                if plugin.instances.has_key(pluginInstanceName):
-                    pluginInstance = plugin.instances.get(pluginInstanceName)
-                else:
-                    pluginInstance = PluginInstance()
-                    pluginInstance.name = pluginInstanceName
-                    plugin.instances[pluginInstanceName] = pluginInstance
-
-                if pluginInstance.types.has_key(typeName):
-                    type = pluginInstance.types.get(typeName)
-                else:
-                    type = Type()
-                    type.name = typeName
-                    pluginInstance.types[typeName] = type
-
-                if type.instances.has_key(typeInstanceName):
-                    typeInstance = type.instances.get(typeInstanceName)
-                else:
-                    typeInstance = TypeInstance()
-                    typeInstance.name = typeInstanceName
-                    type.instances[typeInstanceName] = pluginInstance
-
-                typeInstance.stamp = stamp
+            identifiers = c.listval()
+            self.processIdentifiers(identifiers)
             time.sleep(5)
+
 
 class Worker(Thread):
 
@@ -66,18 +74,35 @@ class Worker(Thread):
         self.daemon = True
         self.q = q
         self.name = name
+        self.sock_path = sock_path
+
+    def _echoPlugin(self, plugin):
+        for instance in plugin.instances.values():
+            print "\tinstance=%s" % (instance.name)
+            for type in instance.types.values():
+                print "\t\ttype=%s" % (type.name)
+                for typeInstance in type.instances.values():
+                    print "\t\t\t%s:" % (typeInstance.identifier)
+
+    def _fetchPlugin(self, plugin, c):
+        for instance in plugin.instances.values():
+            for type in instance.types.values():
+                for typeInstance in type.instances.values():
+                    values = c.getval(typeInstance.identifier)
+                    print "[%s] %s: %s" % (self.name, typeInstance.identifier, ', '.join(values))
 
     def run(self):
+        c = Collectd(self.sock_path, noisy=False)
         while True:
             plugin = self.q.get()
-            print "\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, ', '.join(plugin.instances.keys()))
+            self._fetchPlugin(plugin, c)
             self.q.task_done()
+
 
 class CCheckD(Thread):
 
     def __init__ (self,sock_path,workers=1):
         Thread.__init__(self)
-        checkd = self
         self.workers = workers
         self.sock_path = sock_path
         self.q = Queue()
