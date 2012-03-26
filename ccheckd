@@ -2,6 +2,7 @@
 from src.ccheckd import CCheckD
 
 if __name__ == '__main__':
-    c = CCheckD()
+    c = CCheckD('/var/run/collectd.sock',2)
     c.start()
+    c.join()
 

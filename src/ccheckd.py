@@ -2,18 +2,21 @@
 from Queue import Queue
 from threading import Thread
 import time
+import signal
 from collectd import Collectd
 from model import *
 
 class Poller(Thread):
 
-    def __init__ (self,q):
+    def __init__ (self,sock_path,q):
         Thread.__init__(self)
+        self.daemon = True
         self.q = q
+        self.sock_path = sock_path
 
     def run(self):
         plugin = Plugin()
-        c = Collectd('/var/run/collectd.sock', noisy=True)
+        c = Collectd(self.sock_path, noisy=True)
         while True:
             for val in c.listval():
                 stamp, identifier = val.split(' ',1)
@@ -58,8 +61,9 @@ class Poller(Thread):
 
 class Worker(Thread):
 
-    def __init__ (self,name,q):
+    def __init__ (self,name,sock_path,q):
         Thread.__init__(self)
+        self.daemon = True
         self.q = q
         self.name = name
 
@@ -69,12 +73,26 @@ class Worker(Thread):
             print "\t%s\t%s\t%s\t%s" % (self.name, plugin.name, plugin.host, ', '.join(plugin.instances.keys()))
             self.q.task_done()
 
+class CCheckD(Thread):
 
-class CCheckD():
+    def __init__ (self,sock_path,workers=1):
+        Thread.__init__(self)
+        checkd = self
+        self.workers = workers
+        self.sock_path = sock_path
+        self.q = Queue()
 
-    def start(self):
-        q = Queue()
-        worker = Worker('a',q)
-        worker.start()
-        poller = Poller(q)
+
+    def run(self):
+        self._startWorkers()
+        self._startPoller()
+
+    def _startPoller(self):
+        poller = Poller(self.sock_path,self.q)
         poller.start()
+        poller.join()
+
+    def _startWorkers(self):
+        for i in xrange(self.workers):
+            worker = Worker(str(i),self.sock_path,self.q)
+            worker.start()
