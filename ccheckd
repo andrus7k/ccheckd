@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from lib.ccheckd import CCheckD
+from lib import CCheckD
 
 if __name__ == '__main__':
     c = CCheckD('/var/run/collectd.sock',2)
