@@ -1,26 +1,35 @@
 import sys
 
-class Plugin():
+class PluginFactory:
+    @classmethod
+    def get(cls,name,host):
+        return getattr(sys.modules[__name__], name.capitalize())(name,host)
+
+class Plugin(object):
     def __init__(self, name, host):
-        self.__class__ = getattr(sys.modules[__name__], name.capitalize())
         self.name = name
         self.host = host
-        self.instances = {}
-        self.identifiers = []
+        self.identifiers = dict()
         self.stampMin = 0
         self.stampMax = 0
 
     def run(self):
-        print "%s: %s" (self.__class__.__name__, ', '.join(self.identifiers))
+        for identifier,values in self.identifiers.items():
+            print "[%s] %s: %s" % (self.name, identifier, ', '.join(values))
 
 class Cpu(Plugin):
-    def run(self):
-        super(self.__class__, self).run()
+    def __init__(self, name, host):
+        super(self.__class__, self).__init__(name,host)
 
 class Interface(Plugin):
-    def run(self):
-        super(self.__class__, self).run()
+    def __init__(self, name, host):
+        super(Interface, self).__init__(name, host)
 
 class Load(Plugin):
-    def run(self):
-        super(self.__class__, self).run()
+    def __init__(self, name, host):
+        super(Load, self).__init__(name, host)
+
+class Df(Plugin):
+    def __init__(self, name, host):
+        super(Df, self).__init__(name, host)
+

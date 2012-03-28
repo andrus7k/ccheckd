@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
-from plugins import Plugin
+from plugins import PluginFactory
 import time
 from ext import Collectd
 
 class Poller(Thread):
     evicted = list()
 
-    def __init__ (self,sock_path,q):
+    def __init__ (self,sock_path,q,sleep=30):
         Thread.__init__(self)
         self.daemon = True
         self.q = q
         self.sock_path = sock_path
+        self.sleep = sleep
 
     def parseIdentifier(self, val):
         stamp, identifier = val.split(' ', 1)
@@ -28,11 +29,11 @@ class Poller(Thread):
                 continue
             try:
                 if 'plugin' not in locals():
-                    plugin = Plugin(pluginName, hostName)
+                    plugin = PluginFactory.get(pluginName, hostName)
                 elif plugin.name != pluginName:
                     self.q.put(plugin)
-                    plugin = Plugin(pluginName, hostName)
-                plugin.identifiers.append(identifier)
+                    plugin = PluginFactory.get(pluginName, hostName)
+                plugin.identifiers[identifier] = 0
             except AttributeError:
                 self.evicted.append(pluginName)
 
@@ -41,4 +42,4 @@ class Poller(Thread):
         while True:
             identifiers = c.listval()
             self.processIdentifiers(identifiers)
-            time.sleep(5)
+            time.sleep(self.sleep)

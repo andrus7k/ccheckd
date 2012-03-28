@@ -1,1 +1,1 @@
-from plugins import Plugin
+from plugins import PluginFactory

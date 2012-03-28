@@ -21,20 +21,22 @@ class Worker(Thread):
                     print "\t\t\t%s:" % (typeInstance.identifier)
 
     def _fetchPlugin(self, plugin, c):
-        for identifier in plugin.identifiers:
+        for identifier in plugin.identifiers.keys():
             i = 5;
             while i > 0:
                 try:
                     values = c.getval(identifier)
+                    plugin.identifiers[identifier] = values
+                    break
                 except KeyError:
                     i=i-1
                     print "[%s] ERROR: GETVAL %s failed (will retry %s times)" % (self.name, identifier, i)
                     time.sleep(.1)
-            print "[%s] %s: %s" % (self.name, identifier, ', '.join(values))
 
     def run(self):
         c = Collectd(self.sock_path, noisy=False)
         while True:
             plugin = self.q.get()
             self._fetchPlugin(plugin, c)
+            plugin.run()
             self.q.task_done()
