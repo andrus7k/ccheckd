@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
+import time
 from ext import Collectd
 
 class Worker(Thread):
@@ -21,7 +22,14 @@ class Worker(Thread):
 
     def _fetchPlugin(self, plugin, c):
         for identifier in plugin.identifiers:
-            values = c.getval(identifier)
+            i = 5;
+            while i > 0:
+                try:
+                    values = c.getval(identifier)
+                except KeyError:
+                    i=i-1
+                    print "[%s] ERROR: GETVAL %s failed (will retry %s times)" % (self.name, identifier, i)
+                    time.sleep(.1)
             print "[%s] %s: %s" % (self.name, identifier, ', '.join(values))
 
     def run(self):
