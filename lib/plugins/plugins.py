@@ -21,6 +21,10 @@ class Cpu(Plugin):
     def __init__(self, name, host):
         super(self.__class__, self).__init__(name,host)
 
+class Memory(Plugin):
+    def __init__(self, name, host):
+        super(self.__class__, self).__init__(name,host)
+
 class Interface(Plugin):
     def __init__(self, name, host):
         super(Interface, self).__init__(name, host)

@@ -6,19 +6,19 @@ from worker import Worker
 
 class CCheckD(Thread):
 
-    def __init__ (self,sock_path,workers=1):
+    def __init__ (self,sock_path,sleep=5,workers=1):
         Thread.__init__(self)
+        self.sleep = sleep
         self.workers = workers
         self.sock_path = sock_path
         self.q = Queue()
-
 
     def run(self):
         self._startWorkers()
         self._startPoller()
 
     def _startPoller(self):
-        poller = Poller(self.sock_path,self.q)
+        poller = Poller(self.sock_path,self.q,self.sleep)
         poller.start()
         poller.join()
 
