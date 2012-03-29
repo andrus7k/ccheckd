@@ -34,8 +34,9 @@ class Poller(Thread):
                     self.q.put(plugin)
                     plugin = PluginFactory.get(pluginName, hostName)
                 plugin.identifiers[identifier] = 0
-            except AttributeError:
+            except Exception, e:
                 self.evicted.append(pluginName)
+                print "ERROR: evicting %s with exeception %s" % (pluginName, str(e))
 
     def run(self):
         c = Collectd(self.sock_path, noisy=True)
