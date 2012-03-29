@@ -14,8 +14,7 @@ class Plugin(object):
         self.stampMax = 0
 
     def run(self):
-        for identifier,values in self.identifiers.items():
-            print "[%s] %s: %s" % (self.name, identifier, ', '.join(values))
+        print "[PLUGIN: %s] %s identifiers" % (self.name, len(self.identifiers))
 
 class Cpu(Plugin):
     def __init__(self, name, host):

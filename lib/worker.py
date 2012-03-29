@@ -25,7 +25,7 @@ class Worker(Thread):
                     print "[WORKER:%s] ERROR: GETVAL %s, retry=%s)" % (self.name, identifier, i)
                     time.sleep(.1)
                 except Exception, e:
-                    print "[WORKER:%s] ERROR: GETVAL %s, %s)" % (self.name, identifier, e)
+                    print "[WORKER:%s] ERROR: GETVAL %s, %s)" % (self.name, identifier, str(e))
                     break
 
     def run(self):
